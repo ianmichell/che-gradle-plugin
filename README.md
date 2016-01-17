@@ -37,3 +37,9 @@ In `che/assembly-machine-war/pom.xml` add:
 ```$ cd assembly-main/target/eclipse-che-4.0.0-beta-12-SNAPSHOT/eclipse-che-4.0.0-beta-12-SNAPSHOT/bin && ./che.sh run```
 
 Finally, go to: [http://127.0.0.1:8080/ide/workspace](http://127.0.0.1:8080/ide/workspace)
+
+####Licensing
+This code is under GNU GPLv3 license. You can redistribute it by your own.
+
+####Contributing
+Contributing performs via Pull Requests.
