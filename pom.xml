@@ -49,6 +49,7 @@
     <modules>
         <module>gradle-server</module>
         <module>gradle-shared</module>
+        <module>gradle-client</module>
     </modules>
     <scm>
         <connection>scm:git:http://github.com/vzhukovskii/che-gradle-plugin</connection>

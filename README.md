@@ -23,11 +23,22 @@ In `che/assembly-machine-war/pom.xml` add:
             <artifactId>gradle-server</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+```
+
+In `che/assembly-ide-war/pom.xml` add:
+
+```
         <dependency>
             <groupId>pro.javax.che.plugin.gradle</groupId>
-            <artifactId>gradle-shared</artifactId>
+            <artifactId>gradle-client</artifactId>
             <version>1.0-SNAPSHOT</version>
         </dependency>
+```
+
+In `che/assembly-ide-war/src/main/resources/org/eclipse/che/ide/IDE.gwt.xml` add:
+
+```
+    <inherits name="pro.javax.che.plugin.gradle.Gradle"/>
 ```
 
 :warning: during `che` build, maven enforcer plugin will warn that you provide invalid dependency. So, in this case you should build `che` with argument `-Denforcer.skip=true`:

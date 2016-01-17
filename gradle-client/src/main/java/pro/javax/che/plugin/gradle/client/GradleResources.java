@@ -12,21 +12,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package pro.javax.che.plugin.gradle;
+package pro.javax.che.plugin.gradle.client;
+
+import com.google.gwt.resources.client.ClientBundle;
 
 /**
- * Describes shared constants between modules.
+ * Client side resources.
  *
  * @author Vlad Zhukovskyi
  */
-public interface Constants {
-    /**
-     * Project Type definitions.
-     */
-    String  PROJECT_TYPE_ID           = "gradle";
-    String  PROJECT_TYPE_DISPLAY_NAME = "Gradle Project";
-    boolean PROJECT_TYPE_PRIMARY      = true;
-    boolean PROJECT_TYPE_MIXABLE      = false;
-    boolean PROJECT_TYPE_PERSISTED    = true;
-    String  PROJECT_TYPE_PARENT       = "java";
+public interface GradleResources extends ClientBundle {
 }

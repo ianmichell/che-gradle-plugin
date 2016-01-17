@@ -12,21 +12,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package pro.javax.che.plugin.gradle;
+package pro.javax.che.plugin.gradle.client;
+
+import pro.javax.che.plugin.gradle.client.project.GradleProjectWizardRegistrar;
+
+import com.google.gwt.inject.client.AbstractGinModule;
+
+import org.eclipse.che.ide.api.extension.ExtensionGinModule;
+import org.eclipse.che.ide.api.project.type.wizard.ProjectWizardRegistrar;
+
+import static com.google.gwt.inject.client.multibindings.GinMultibinder.newSetBinder;
 
 /**
- * Describes shared constants between modules.
+ * Client side gin configuration.
  *
  * @author Vlad Zhukovskyi
  */
-public interface Constants {
-    /**
-     * Project Type definitions.
-     */
-    String  PROJECT_TYPE_ID           = "gradle";
-    String  PROJECT_TYPE_DISPLAY_NAME = "Gradle Project";
-    boolean PROJECT_TYPE_PRIMARY      = true;
-    boolean PROJECT_TYPE_MIXABLE      = false;
-    boolean PROJECT_TYPE_PERSISTED    = true;
-    String  PROJECT_TYPE_PARENT       = "java";
+@ExtensionGinModule
+public class GradleGinModule extends AbstractGinModule {
+    /** {@inheritDoc} */
+    @Override
+    protected void configure() {
+        newSetBinder(binder(), ProjectWizardRegistrar.class).addBinding().to(GradleProjectWizardRegistrar.class);
+    }
 }

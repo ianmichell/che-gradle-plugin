@@ -12,21 +12,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package pro.javax.che.plugin.gradle;
+package pro.javax.che.plugin.gradle.client;
+
+import com.google.inject.Singleton;
+
+import org.eclipse.che.ide.api.extension.Extension;
 
 /**
- * Describes shared constants between modules.
+ * Registers client side extension.
  *
  * @author Vlad Zhukovskyi
  */
-public interface Constants {
-    /**
-     * Project Type definitions.
-     */
-    String  PROJECT_TYPE_ID           = "gradle";
-    String  PROJECT_TYPE_DISPLAY_NAME = "Gradle Project";
-    boolean PROJECT_TYPE_PRIMARY      = true;
-    boolean PROJECT_TYPE_MIXABLE      = false;
-    boolean PROJECT_TYPE_PERSISTED    = true;
-    String  PROJECT_TYPE_PARENT       = "java";
+@Singleton
+@Extension(title = "Gradle Support", description = "Create Gradle Projects", version = "1.0")
+public class GradleExtension {
+    @SuppressWarnings("unused")
+    private org.eclipse.che.ide.ext.java.shared.Constants jConstants;
+
+    @SuppressWarnings("unused")
+    private pro.javax.che.plugin.gradle.Constants gConstants;
 }

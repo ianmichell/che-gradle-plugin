@@ -12,21 +12,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package pro.javax.che.plugin.gradle;
+package pro.javax.che.plugin.gradle.client;
+
+import com.google.gwt.i18n.client.Messages;
 
 /**
- * Describes shared constants between modules.
+ * Localization resources for client.
  *
  * @author Vlad Zhukovskyi
  */
-public interface Constants {
-    /**
-     * Project Type definitions.
-     */
-    String  PROJECT_TYPE_ID           = "gradle";
-    String  PROJECT_TYPE_DISPLAY_NAME = "Gradle Project";
-    boolean PROJECT_TYPE_PRIMARY      = true;
-    boolean PROJECT_TYPE_MIXABLE      = false;
-    boolean PROJECT_TYPE_PERSISTED    = true;
-    String  PROJECT_TYPE_PARENT       = "java";
+public interface GradleLocalization extends Messages {
 }

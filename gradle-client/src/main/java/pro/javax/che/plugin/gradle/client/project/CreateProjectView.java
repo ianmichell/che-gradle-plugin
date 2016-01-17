@@ -12,21 +12,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
-package pro.javax.che.plugin.gradle;
+package pro.javax.che.plugin.gradle.client.project;
+
+import com.google.inject.ImplementedBy;
+
+import org.eclipse.che.ide.api.mvp.View;
 
 /**
- * Describes shared constants between modules.
+ * View for {@code CreateProjectPresenter}.
  *
  * @author Vlad Zhukovskyi
+ * @see CreateProjectViewImpl
+ * @see CreateProjectPresenter
  */
-public interface Constants {
-    /**
-     * Project Type definitions.
-     */
-    String  PROJECT_TYPE_ID           = "gradle";
-    String  PROJECT_TYPE_DISPLAY_NAME = "Gradle Project";
-    boolean PROJECT_TYPE_PRIMARY      = true;
-    boolean PROJECT_TYPE_MIXABLE      = false;
-    boolean PROJECT_TYPE_PERSISTED    = true;
-    String  PROJECT_TYPE_PARENT       = "java";
+@ImplementedBy(CreateProjectViewImpl.class)
+public interface CreateProjectView extends View<CreateProjectView.ActionDelegate> {
+    interface ActionDelegate {
+    }
 }
