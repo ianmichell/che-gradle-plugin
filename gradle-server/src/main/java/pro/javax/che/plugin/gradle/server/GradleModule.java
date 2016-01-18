@@ -17,8 +17,8 @@ package pro.javax.che.plugin.gradle.server;
 import pro.javax.che.plugin.gradle.Constants;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.multibindings.Multibinder;
 
+import org.eclipse.che.api.project.server.ValueProviderFactory;
 import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.inject.DynaModule;
 
@@ -38,7 +38,7 @@ public class GradleModule extends AbstractModule {
     /** {@inheritDoc} */
     @Override
     protected void configure() {
-        Multibinder<ProjectTypeDef> projectTypeBinder = newSetBinder(binder(), ProjectTypeDef.class);
-        projectTypeBinder.addBinding().to(GradleProjectType.class);
+        newSetBinder(binder(), ProjectTypeDef.class).addBinding().to(GradleProjectType.class);
+        newSetBinder(binder(), ValueProviderFactory.class).addBinding().to(GradleValueProviderFactory.class);
     }
 }

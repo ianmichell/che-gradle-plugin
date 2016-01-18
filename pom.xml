@@ -47,8 +47,9 @@
         </developer>
     </developers>
     <modules>
-        <module>gradle-server</module>
+        <module>gradle-core</module>
         <module>gradle-shared</module>
+        <module>gradle-server</module>
         <module>gradle-client</module>
     </modules>
     <scm>
@@ -62,11 +63,17 @@
         <url>https://github.com/vzhukovskii/che-gradle-plugin/issues</url>
     </issueManagement>
     <properties>
+        <gradle.api.version>2.10</gradle.api.version>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
     <dependencyManagement>
         <dependencies>
+            <dependency>
+                <groupId>pro.javax.che.plugin.gradle</groupId>
+                <artifactId>gradle-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
             <dependency>
                 <groupId>pro.javax.che.plugin.gradle</groupId>
                 <artifactId>gradle-shared</artifactId>
