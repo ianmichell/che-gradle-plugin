@@ -134,6 +134,22 @@ public class GradleValueProviderFactoryTest {
         assertTrue(elementsEqual(computedGradleVersion, expectedGradleVersion));
     }
 
+    @Test
+    public void testShouldReturnEmptyValueForEmptyProjectFolder() throws Exception {
+        vfs.createFolder(vfs.getMountPoint().getRoot().getId(), "empty");
+        final VirtualFile project = vfs.getMountPoint().getVirtualFile("/empty");
+
+        assertTrue(project.isFolder());
+
+        final FolderEntry projectFolder = new FolderEntry(workspace, project);
+        final GradleProjectManager gradleProjectManager = new GradleProjectManager(new DefaultProjectConnectionFactory());
+        final ValueProviderFactory valueProviderFactory = new GradleValueProviderFactory(gradleProjectManager);
+        final ValueProvider valueProvider = valueProviderFactory.newInstance(projectFolder);
+
+        List<String> computedPath = valueProvider.getValues(PROJECT_PATH_VAR);
+        assertTrue(computedPath.isEmpty());
+    }
+
     @After
     public void tearDown() throws Exception {
         IoUtil.removeDirectory(vfs.getMountPoint().getRoot().getIoFile().getAbsolutePath());

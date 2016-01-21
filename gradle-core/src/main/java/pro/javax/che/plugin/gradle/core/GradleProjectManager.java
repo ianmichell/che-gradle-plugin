@@ -43,8 +43,8 @@ import static com.google.common.base.Strings.nullToEmpty;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
-import static pro.javax.che.plugin.gradle.Constants.GRADLE_WRAPPER_PATH;
-import static pro.javax.che.plugin.gradle.Constants.GRADLE_WRAPPER_PROPERTIES;
+import static pro.javax.che.plugin.gradle.core.Constants.GRADLEW_PROPERTIES_PATH;
+import static pro.javax.che.plugin.gradle.core.Constants.GRADLE_BUILD_SCRIPT_PATH;
 
 /**
  * Gradle manager.
@@ -53,8 +53,6 @@ import static pro.javax.che.plugin.gradle.Constants.GRADLE_WRAPPER_PROPERTIES;
  */
 @Singleton
 public class GradleProjectManager {
-
-    public static final String GRADLEW_PROPERTIES_PATH = GRADLE_WRAPPER_PATH + File.separator + GRADLE_WRAPPER_PROPERTIES;
 
     private ProjectConnectionFactory connectionFactory;
 
@@ -222,6 +220,19 @@ public class GradleProjectManager {
         checkNotNull(buildEnvironment);
 
         return buildEnvironment.getGradle().getGradleVersion();
+    }
+
+    /**
+     * Checks if project folder contains 'build.gradle' script to identify if this project is Gradle project.
+     *
+     * @param projectFolder
+     *         project folder to check
+     * @return true if project folder is Gradle project
+     */
+    public static boolean isGradleProject(java.io.File projectFolder) {
+        java.io.File buildScript = new java.io.File(projectFolder, GRADLE_BUILD_SCRIPT_PATH);
+
+        return buildScript.exists() && buildScript.isFile();
     }
 
     public static java.io.File findWrapperPropertiesFile(FolderEntry projectFolder) {

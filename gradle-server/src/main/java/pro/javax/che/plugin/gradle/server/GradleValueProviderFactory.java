@@ -51,6 +51,7 @@ import static pro.javax.che.plugin.gradle.core.GradleProjectManager.getPath;
 import static pro.javax.che.plugin.gradle.core.GradleProjectManager.getProjectDescription;
 import static pro.javax.che.plugin.gradle.core.GradleProjectManager.getProjectSourceDirectories;
 import static pro.javax.che.plugin.gradle.core.GradleProjectManager.getPublicTasks;
+import static pro.javax.che.plugin.gradle.core.GradleProjectManager.isGradleProject;
 
 /**
  * Resolve basic project properties, such as Gradle version, distribution type, project tasks, etc.
@@ -84,6 +85,11 @@ public class GradleValueProviderFactory implements ValueProviderFactory {
         @Override
         public List<String> getValues(String attributeName) throws ValueStorageException {
             final java.io.File ioFolder = projectFolder.getVirtualFile().getIoFile();
+
+            if (!isGradleProject(ioFolder)) {
+                return unmodifiableList(emptyList());
+            }
+
             final ProjectConnection projectConnection = projectManager.getProjectConnection(ioFolder);
             final GradleProject projectModel = projectConnection.getModel(GradleProject.class);
             final IdeaProject ideaProjectModel = projectConnection.getModel(IdeaProject.class);

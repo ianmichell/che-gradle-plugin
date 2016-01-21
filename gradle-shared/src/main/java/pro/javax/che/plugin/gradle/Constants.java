@@ -51,16 +51,6 @@ public interface Constants {
     String PROJECT_GRADLE_VERSION_VAR_DECRIPTION = "Used Gradle version in project.";
 
     /**
-     * Default gradle folder name.
-     */
-    String GRADLE_PATH = "gradle";
-
-    /**
-     * Gradle wrapper folder name, "gradle/wrapper".
-     */
-    String GRADLE_WRAPPER_PATH = GRADLE_PATH + java.io.File.separator + "wrapper";
-
-    /**
      * Project local property file.
      */
     String GRADLE_WRAPPER_PROPERTIES = "gradle-wrapper.properties";
