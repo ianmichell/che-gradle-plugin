@@ -14,6 +14,8 @@
  *******************************************************************************/
 package pro.javax.che.plugin.gradle.server;
 
+import pro.javax.che.plugin.gradle.core.GradleProjectManager;
+
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.project.server.FolderEntry;
@@ -21,8 +23,34 @@ import org.eclipse.che.api.project.server.InvalidValueException;
 import org.eclipse.che.api.project.server.ValueProvider;
 import org.eclipse.che.api.project.server.ValueProviderFactory;
 import org.eclipse.che.api.project.server.ValueStorageException;
+import org.gradle.tooling.ProjectConnection;
+import org.gradle.tooling.model.GradleProject;
+import org.gradle.tooling.model.build.BuildEnvironment;
+import org.gradle.tooling.model.idea.IdeaProject;
 
+import javax.inject.Inject;
 import java.util.List;
+
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
+import static java.util.Collections.unmodifiableList;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_BUILD_DIR_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_BUILD_SCRIPT_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_DESCRIPTION_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_GRADLE_VERSION_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_PATH_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_SOURCE_DIR_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_TASKS_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_TEST_DIR_VAR;
+import static pro.javax.che.plugin.gradle.SourceType.SOURCE;
+import static pro.javax.che.plugin.gradle.SourceType.TEST_SOURCE;
+import static pro.javax.che.plugin.gradle.core.GradleProjectManager.getBuildDirectory;
+import static pro.javax.che.plugin.gradle.core.GradleProjectManager.getBuildScriptPath;
+import static pro.javax.che.plugin.gradle.core.GradleProjectManager.getGradleVersion;
+import static pro.javax.che.plugin.gradle.core.GradleProjectManager.getPath;
+import static pro.javax.che.plugin.gradle.core.GradleProjectManager.getProjectDescription;
+import static pro.javax.che.plugin.gradle.core.GradleProjectManager.getProjectSourceDirectories;
+import static pro.javax.che.plugin.gradle.core.GradleProjectManager.getPublicTasks;
 
 /**
  * Resolve basic project properties, such as Gradle version, distribution type, project tasks, etc.
@@ -31,10 +59,19 @@ import java.util.List;
  */
 @Singleton
 public class GradleValueProviderFactory implements ValueProviderFactory {
+
+    private GradleProjectManager projectManager;
+
+    @Inject
+    public GradleValueProviderFactory(GradleProjectManager projectManager) {
+        this.projectManager = projectManager;
+    }
+
     @Override
     public ValueProvider newInstance(FolderEntry projectFolder) {
         return new GradleValueProvider(projectFolder);
     }
+
 
     protected class GradleValueProvider implements ValueProvider {
 
@@ -46,12 +83,43 @@ public class GradleValueProviderFactory implements ValueProviderFactory {
 
         @Override
         public List<String> getValues(String attributeName) throws ValueStorageException {
-            return null;
+            final java.io.File ioFolder = projectFolder.getVirtualFile().getIoFile();
+            final ProjectConnection projectConnection = projectManager.getProjectConnection(ioFolder);
+            final GradleProject projectModel = projectConnection.getModel(GradleProject.class);
+            final IdeaProject ideaProjectModel = projectConnection.getModel(IdeaProject.class);
+            final BuildEnvironment buildEnvironmentModel = projectConnection.getModel(BuildEnvironment.class);
+
+            try {
+
+                switch (attributeName) {
+                    case PROJECT_TASKS_VAR:
+                        return getPublicTasks(projectModel);
+                    case PROJECT_BUILD_DIR_VAR:
+                        return unmodifiableList(singletonList(getBuildDirectory(projectModel)));
+                    case PROJECT_PATH_VAR:
+                        return unmodifiableList(singletonList(getPath(projectModel)));
+                    case PROJECT_BUILD_SCRIPT_VAR:
+                        return unmodifiableList(singletonList(getBuildScriptPath(projectModel)));
+                    case PROJECT_DESCRIPTION_VAR:
+                        return unmodifiableList(singletonList(getProjectDescription(projectModel)));
+                    case PROJECT_SOURCE_DIR_VAR:
+                        return getProjectSourceDirectories(ideaProjectModel, SOURCE);
+                    case PROJECT_TEST_DIR_VAR:
+                        return getProjectSourceDirectories(ideaProjectModel, TEST_SOURCE);
+                    case PROJECT_GRADLE_VERSION_VAR:
+                        return unmodifiableList(singletonList(getGradleVersion(buildEnvironmentModel)));
+                    default:
+                        return unmodifiableList(emptyList());
+                }
+
+            } finally {
+                projectConnection.close();
+            }
         }
 
         @Override
         public void setValues(String attributeName, List<String> value) throws ValueStorageException, InvalidValueException {
-
+            //TODO
         }
     }
 }

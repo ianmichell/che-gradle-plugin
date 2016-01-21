@@ -42,7 +42,7 @@ import static pro.javax.che.plugin.gradle.Constants.PROJECT_TYPE_PRIMARY;
  *
  * @author Vlad Zhukovskyi
  */
-public class GradleProjectTypeTest {
+public class GradleProjectTypeUnitTest {
 
     Injector injector;
 

@@ -12,10 +12,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *******************************************************************************/
+package pro.javax.che.plugin.gradle.core.connection.internal;
+
+import pro.javax.che.plugin.gradle.core.connection.ProjectConnectionFactory;
+
+import org.gradle.tooling.ProjectConnection;
+import org.gradle.tooling.internal.consumer.ConnectorServices;
+import org.gradle.tooling.internal.consumer.DefaultGradleConnector;
+
+import java.io.File;
+
 /**
- * Gradle installation manager.
+ * Default implementation for project connection.
  *
  * @author Vlad Zhukovskyi
  */
-public class GradleManager {
+public class DefaultProjectConnectionFactory implements ProjectConnectionFactory {
+
+    /** {@inheritDoc} */
+    @Override
+    public ProjectConnection newConnection(File projectDirectory) {
+        DefaultGradleConnector connector = ConnectorServices.createConnector();
+        connector.setVerboseLogging(false);
+        connector.forProjectDirectory(projectDirectory);
+
+        return connector.connect();
+    }
 }

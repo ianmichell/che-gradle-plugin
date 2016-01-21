@@ -19,6 +19,22 @@ import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_BUILD_DIR_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_BUILD_DIR_VAR_DESCRIPTION;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_BUILD_SCRIPT_DESCRIPTION;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_BUILD_SCRIPT_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_DESCRIPTION_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_DESCRIPTION_VAR_DESCRIPTION;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_GRADLE_VERSION_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_GRADLE_VERSION_VAR_DECRIPTION;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_PATH_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_PATH_VAR_DESCRIPTION;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_SOURCE_DIR_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_SOURCE_DIR_VAR_DESCRIPTION;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_TASKS_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_TASKS_VAR_DESCRIPTION;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_TEST_DIR_VAR;
+import static pro.javax.che.plugin.gradle.Constants.PROJECT_TEST_DIR_VAR_DESCRIPTION;
 import static pro.javax.che.plugin.gradle.Constants.PROJECT_TYPE_DISPLAY_NAME;
 import static pro.javax.che.plugin.gradle.Constants.PROJECT_TYPE_ID;
 import static pro.javax.che.plugin.gradle.Constants.PROJECT_TYPE_MIXABLE;
@@ -35,8 +51,17 @@ import static pro.javax.che.plugin.gradle.Constants.PROJECT_TYPE_PRIMARY;
 public class GradleProjectType extends ProjectTypeDef {
 
     @Inject
-    public GradleProjectType() {
+    public GradleProjectType(GradleValueProviderFactory variableProviderFactory) {
         super(PROJECT_TYPE_ID, PROJECT_TYPE_DISPLAY_NAME, PROJECT_TYPE_PRIMARY, PROJECT_TYPE_MIXABLE, PROJECT_TYPE_PERSISTED);
+
+        addVariableDefinition(PROJECT_TASKS_VAR, PROJECT_TASKS_VAR_DESCRIPTION, false, variableProviderFactory);
+        addVariableDefinition(PROJECT_BUILD_DIR_VAR, PROJECT_BUILD_DIR_VAR_DESCRIPTION, false, variableProviderFactory);
+        addVariableDefinition(PROJECT_PATH_VAR, PROJECT_PATH_VAR_DESCRIPTION, false, variableProviderFactory);
+        addVariableDefinition(PROJECT_BUILD_SCRIPT_VAR, PROJECT_BUILD_SCRIPT_DESCRIPTION, false, variableProviderFactory);
+        addVariableDefinition(PROJECT_DESCRIPTION_VAR, PROJECT_DESCRIPTION_VAR_DESCRIPTION, false, variableProviderFactory);
+        addVariableDefinition(PROJECT_SOURCE_DIR_VAR, PROJECT_SOURCE_DIR_VAR_DESCRIPTION, false, variableProviderFactory);
+        addVariableDefinition(PROJECT_TEST_DIR_VAR, PROJECT_TEST_DIR_VAR_DESCRIPTION, false, variableProviderFactory);
+        addVariableDefinition(PROJECT_GRADLE_VERSION_VAR, PROJECT_GRADLE_VERSION_VAR_DECRIPTION, false, variableProviderFactory);
 
         addParent(PROJECT_TYPE_PARENT);
     }
