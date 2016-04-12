@@ -58,10 +58,10 @@
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-project</artifactId>
         </dependency>
-        <dependency>
+	<!--<dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-vfs</artifactId>
-        </dependency>
+	    </dependency> -->
         <dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-api-workspace</artifactId>
@@ -99,11 +99,11 @@
             <artifactId>junit</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
+	<!--<dependency>
             <groupId>org.eclipse.che.core</groupId>
             <artifactId>che-core-vfs-impl</artifactId>
             <scope>test</scope>
-        </dependency>
+	    </dependency> -->
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-core</artifactId>

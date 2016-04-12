@@ -18,9 +18,9 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <parent>
-        <artifactId>maven-depmgt-pom</artifactId>
-        <groupId>org.eclipse.che.depmgt</groupId>
-        <version>4.0.0-beta-12-SNAPSHOT</version>
+        <artifactId>che-parent</artifactId>
+        <groupId>org.eclipse.che</groupId>
+        <version>4.0.1</version>
     </parent>
     <groupId>pro.javax.che.plugin.gradle</groupId>
     <artifactId>che-gradle-plugin-parent</artifactId>
@@ -69,6 +69,13 @@
     </properties>
     <dependencyManagement>
         <dependencies>
+		<!--<dependency>
+                <artifactId>maven-depmgt-pom</artifactId>
+                <groupId>org.eclipse.che.depmgt</groupId>
+                <version>4.0.0</version>
+		<scope>import</scope>
+		<type>pom</type>
+		</dependency> -->
             <dependency>
                 <groupId>org.gradle</groupId>
                 <artifactId>gradle-core</artifactId>
@@ -92,6 +99,20 @@
         </dependencies>
     </dependencyManagement>
     <dependencies />
+    <repositories>
+	<repository>
+	    <id>codenvy-public-repo</id>
+	    <name>codenvy public</name>
+	    <url>https://maven.codenvycorp.com/content/groups/public/</url>
+	</repository>
+    </repositories>
+    <pluginRepositories>
+	<pluginRepository>
+	    <id>codenvy-plugin-public-repo</id>
+	    <name>codenvy plugin public</name>
+	    <url>https://maven.codenvycorp.com/content/groups/public/</url>
+	</pluginRepository>
+    </pluginRepositories>
     <build>
         <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
         <scriptSourceDirectory>src/main/scripts</scriptSourceDirectory>
