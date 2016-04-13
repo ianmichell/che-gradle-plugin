@@ -236,7 +236,7 @@ public class GradleProjectManager {
     }
 
     public static java.io.File findWrapperPropertiesFile(FolderEntry projectFolder) {
-        java.io.File ioProjectFolder = projectFolder.getVirtualFile().getIoFile();
+        java.io.File ioProjectFolder = projectFolder.getVirtualFile().toIoFile();
         java.io.File wrapperPropertiesFile = getGradleWrapperPropertiesFilePath(ioProjectFolder);
         return wrapperPropertiesFile.isFile() ? wrapperPropertiesFile : null;
     }

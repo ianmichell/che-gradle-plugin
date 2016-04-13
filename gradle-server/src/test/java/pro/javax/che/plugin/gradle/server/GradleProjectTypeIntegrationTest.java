@@ -14,31 +14,25 @@
  *******************************************************************************/
 package pro.javax.che.plugin.gradle.server;
 
-import pro.javax.che.plugin.gradle.Constants;
-import pro.javax.che.plugin.gradle.core.GradleProjectManager;
-import pro.javax.che.plugin.gradle.core.connection.internal.DefaultProjectConnectionFactory;
-
-import com.google.inject.Provider;
-
+import com.google.common.io.Files;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.core.rest.HttpJsonRequest;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.HttpJsonResponse;
-import org.eclipse.che.api.core.rest.shared.dto.Link;
-import org.eclipse.che.api.project.server.AttributeFilter;
-import org.eclipse.che.api.project.server.DefaultProjectManager;
-import org.eclipse.che.api.project.server.Project;
-import org.eclipse.che.api.project.server.ProjectManager;
+import org.eclipse.che.api.project.server.*;
 import org.eclipse.che.api.project.server.handlers.ProjectHandlerRegistry;
+import org.eclipse.che.api.project.server.importer.ProjectImporter;
+import org.eclipse.che.api.project.server.importer.ProjectImporterRegistry;
 import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
-import org.eclipse.che.api.vfs.server.SystemPathsFilter;
-import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
-import org.eclipse.che.api.vfs.server.VirtualFileSystemUser;
-import org.eclipse.che.api.vfs.server.VirtualFileSystemUserContext;
-import org.eclipse.che.api.vfs.server.impl.memory.MemoryFileSystemProvider;
+import org.eclipse.che.api.vfs.VirtualFileFilter;
+import org.eclipse.che.api.vfs.impl.file.DefaultFileWatcherNotificationHandler;
+import org.eclipse.che.api.vfs.impl.file.FileTreeWatcher;
+import org.eclipse.che.api.vfs.impl.file.LocalVirtualFileSystemProvider;
+import org.eclipse.che.api.vfs.search.impl.MemoryLuceneSearcherProvider;
 import org.eclipse.che.api.workspace.shared.dto.ProjectConfigDto;
 import org.eclipse.che.api.workspace.shared.dto.UsersWorkspaceDto;
+import org.eclipse.che.api.workspace.shared.dto.WorkspaceConfigDto;
 import org.eclipse.che.commons.test.SelfReturningAnswer;
 import org.eclipse.che.dto.server.DtoFactory;
 import org.eclipse.che.ide.ext.java.server.projecttype.JavaProjectType;
@@ -48,12 +42,17 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import pro.javax.che.plugin.gradle.Constants;
+import pro.javax.che.plugin.gradle.core.GradleProjectManager;
+import pro.javax.che.plugin.gradle.core.connection.internal.DefaultProjectConnectionFactory;
 
-import java.util.Collections;
+import java.io.File;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -64,92 +63,90 @@ import static org.mockito.Mockito.when;
  * @author Vlad Zhukovskyi
  */
 public class GradleProjectTypeIntegrationTest {
-    private static final String workspace    = "my_ws";
+    private static final String workspace = "my_ws";
     private static final String API_ENDPOINT = "http://localhost:8080/che/api";
 
-    private ProjectManager  pm;
+    private ProjectManager pm;
+
     private HttpJsonRequest httpJsonRequest;
 
     @Mock
-    private Provider<AttributeFilter> filterProvider;
+    private UsersWorkspaceDto usersWorkspaceMock;
     @Mock
-    private AttributeFilter           filter;
+    private HttpJsonRequestFactory httpJsonRequestFactory;
     @Mock
-    private HttpJsonRequestFactory    httpJsonRequestFactory;
-    @Mock
-    private HttpJsonResponse          httpJsonResponse;
+    private HttpJsonResponse httpJsonResponse;
 
     @Before
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
-        when(filterProvider.get()).thenReturn(filter);
+        httpJsonRequest = mock(HttpJsonRequest.class, new SelfReturningAnswer());
 
-        final String vfsUser = "dev";
-        final Set<String> vfsUserGroups = new LinkedHashSet<>(Collections.singletonList("workspace/developer"));
+        // Mock the endpoints...
+        when(httpJsonRequestFactory.fromUrl(eq(API_ENDPOINT + "/workspace/" + workspace))).thenReturn(httpJsonRequest);
 
-        final EventService eventService = new EventService();
+        when(httpJsonRequest.useGetMethod()).thenReturn(httpJsonRequest);
 
-        VirtualFileSystemRegistry vfsRegistry = new VirtualFileSystemRegistry();
-        final MemoryFileSystemProvider memoryFileSystemProvider =
-                new MemoryFileSystemProvider(workspace, eventService, new VirtualFileSystemUserContext() {
-                    @Override
-                    public VirtualFileSystemUser getVirtualFileSystemUser() {
-                        return new VirtualFileSystemUser(vfsUser, vfsUserGroups);
-                    }
-                }, vfsRegistry, SystemPathsFilter.ANY);
-        vfsRegistry.registerProvider(workspace, memoryFileSystemProvider);
+        when(httpJsonRequest.request()).thenReturn(httpJsonResponse);
+
+        when(httpJsonResponse.asDto(eq(UsersWorkspaceDto.class))).thenReturn(usersWorkspaceMock);
+
+        // Calls for workspace
+        when(usersWorkspaceMock.getId()).thenReturn(workspace);
+        when(usersWorkspaceMock.getOwner()).thenReturn("ian");
+        when(usersWorkspaceMock.getConfig()).thenReturn(DtoFactory.getInstance().newDto(WorkspaceConfigDto.class));
+
+        // File System
+        final File root = Files.createTempDir();
+        root.deleteOnExit(); // delete on exit!
+
+        final Set<VirtualFileFilter> filters = new LinkedHashSet<>();
+        final MemoryLuceneSearcherProvider searcherProvider = new MemoryLuceneSearcherProvider(filters);
+        final LocalVirtualFileSystemProvider fileSystemProvider = new LocalVirtualFileSystemProvider(root, searcherProvider);
 
         Set<ProjectTypeDef> types = new HashSet<>();
         types.add(new JavaProjectType(new JavaPropertiesValueProviderFactory()));
         types.add(new GradleProjectType(new GradleValueProviderFactory(new GradleProjectManager(new DefaultProjectConnectionFactory()))));
 
-        ProjectTypeRegistry ptRegistry = new ProjectTypeRegistry(types);
-        ProjectHandlerRegistry handlerRegistry = new ProjectHandlerRegistry(new HashSet<>());
+        final EventService eventService = new EventService();
+        final ProjectTypeRegistry ptRegistry = new ProjectTypeRegistry(types);
+        final ProjectHandlerRegistry handlerRegistry = new ProjectHandlerRegistry(new HashSet<>());
+        final WorkspaceHolder workspaceHolder = new WorkspaceHolder(API_ENDPOINT, workspace, httpJsonRequestFactory);
 
-        pm = new DefaultProjectManager(vfsRegistry,
-                                       eventService,
-                                       ptRegistry,
-                                       handlerRegistry,
-                                       filterProvider,
-                                       API_ENDPOINT,
-                                       httpJsonRequestFactory);
+        // Project Registry
+        final ProjectRegistry projectRegistry = new ProjectRegistry(workspaceHolder, fileSystemProvider, ptRegistry, handlerRegistry);
+        projectRegistry.initProjects();
 
-        httpJsonRequest = mock(HttpJsonRequest.class, new SelfReturningAnswer());
-    }
+        // File Tree Watcher
+        final FileTreeWatcher fileTreeWatcher = new FileTreeWatcher(root, new HashSet<>(),
+                new DefaultFileWatcherNotificationHandler(fileSystemProvider));
 
-    @Test
-    public void testGetProjectType() throws Exception {
-        ProjectTypeDef pt = pm.getProjectTypeRegistry().getProjectType(Constants.PROJECT_TYPE_ID);
+        // Import Registry
+        final Set<ProjectImporter> importers = new LinkedHashSet<>();
+        importers.add(new ZipProjectImporter());
+        final ProjectImporterRegistry importerRegistry = new ProjectImporterRegistry(importers);
 
-        //Assert.assertNotNull(pt);
-        Assert.assertTrue(pt.getAttributes().size() > 0);
-        Assert.assertTrue(pt.isTypeOf("java"));
+        pm = new ProjectManager(fileSystemProvider, eventService, ptRegistry, projectRegistry, handlerRegistry, importerRegistry,
+                new DefaultFileWatcherNotificationHandler(fileSystemProvider), fileTreeWatcher);
+
     }
 
     @Test
     public void testGradleProject() throws Exception {
-        UsersWorkspaceDto usersWorkspaceMock = mock(UsersWorkspaceDto.class);
-        when(httpJsonRequestFactory.fromLink(eq(DtoFactory.newDto(Link.class)
-                                                          .withMethod("GET")
-                                                          .withHref(API_ENDPOINT + "/workspace/" + workspace))))
+
+        when(httpJsonRequestFactory.fromUrl(eq("http://localhost:8080/che/api/workspace/my_ws/project")))
                 .thenReturn(httpJsonRequest);
-        when(httpJsonRequestFactory.fromLink(eq(DtoFactory.newDto(Link.class)
-                                                          .withMethod("PUT")
-                                                          .withHref(API_ENDPOINT + "/workspace/" + workspace + "/project"))))
-                .thenReturn(httpJsonRequest);
+        when(httpJsonRequest.usePostMethod()).thenReturn(httpJsonRequest);
+        when(httpJsonRequest.setBody(any(ProjectConfigDto.class))).thenReturn(httpJsonRequest);
         when(httpJsonRequest.request()).thenReturn(httpJsonResponse);
-        when(httpJsonResponse.asDto(UsersWorkspaceDto.class)).thenReturn(usersWorkspaceMock);
-        final ProjectConfigDto projectConfig = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
-                                                         .withName("project")
-                                                         .withPath("/myProject")
-                                                         .withType(Constants.PROJECT_TYPE_ID);
-        when(usersWorkspaceMock.getProjects()).thenReturn(Collections.singletonList(projectConfig));
+        //when(httpJsonResponse.asDto())
 
-        Project project = pm.createProject(workspace, "myProject",
-                                           DtoFactory.getInstance().createDto(ProjectConfigDto.class)
-                                                     .withType(Constants.PROJECT_TYPE_ID),
-                                           null);
+        ProjectConfigDto config = DtoFactory.getInstance().createDto(ProjectConfigDto.class)
+                .withType(Constants.PROJECT_TYPE_ID);
+        config.setPath("/myProject");
+        RegisteredProject project = pm.createProject(config, new HashMap<>());
 
-        Assert.assertEquals(project.getConfig().getType(), Constants.PROJECT_TYPE_ID);
+        Assert.assertEquals(project.getType(), Constants.PROJECT_TYPE_ID);
     }
+
 }

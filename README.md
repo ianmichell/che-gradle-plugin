@@ -21,7 +21,7 @@ In `che/assembly-machine-war/pom.xml` add:
         <dependency>
             <groupId>pro.javax.che.plugin.gradle</groupId>
             <artifactId>gradle-server</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>4.0.1</version>
         </dependency>
 ```
 
@@ -31,7 +31,7 @@ In `che/assembly-ide-war/pom.xml` add:
         <dependency>
             <groupId>pro.javax.che.plugin.gradle</groupId>
             <artifactId>gradle-client</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>4.0.1</version>
         </dependency>
 ```
 

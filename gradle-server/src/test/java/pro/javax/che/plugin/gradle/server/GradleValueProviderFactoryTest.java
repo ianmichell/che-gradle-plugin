@@ -14,50 +14,41 @@
  *******************************************************************************/
 package pro.javax.che.plugin.gradle.server;
 
-import pro.javax.che.plugin.gradle.core.GradleProjectManager;
-import pro.javax.che.plugin.gradle.core.connection.internal.DefaultProjectConnectionFactory;
-
 import com.google.common.io.Files;
-
-import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.project.server.FolderEntry;
-import org.eclipse.che.api.project.server.ValueProvider;
-import org.eclipse.che.api.project.server.ValueProviderFactory;
-import org.eclipse.che.api.vfs.server.SystemPathsFilter;
-import org.eclipse.che.api.vfs.server.VirtualFile;
-import org.eclipse.che.api.vfs.server.VirtualFileSystem;
-import org.eclipse.che.api.vfs.server.VirtualFileSystemRegistry;
+import org.eclipse.che.api.project.server.type.ValueProvider;
+import org.eclipse.che.api.project.server.type.ValueProviderFactory;
+import org.eclipse.che.api.vfs.Path;
+import org.eclipse.che.api.vfs.VirtualFile;
+import org.eclipse.che.api.vfs.VirtualFileFilter;
+import org.eclipse.che.api.vfs.VirtualFileSystem;
+import org.eclipse.che.api.vfs.impl.file.LocalVirtualFileSystemProvider;
+import org.eclipse.che.api.vfs.search.impl.MemoryLuceneSearcherProvider;
 import org.eclipse.che.commons.lang.IoUtil;
-import org.eclipse.che.vfs.impl.fs.LocalFileSystemProvider;
-import org.eclipse.che.vfs.impl.fs.WorkspaceHashLocalFSMountStrategy;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import pro.javax.che.plugin.gradle.core.GradleProjectManager;
+import pro.javax.che.plugin.gradle.core.connection.internal.DefaultProjectConnectionFactory;
 
 import java.io.File;
-import java.net.URI;
 import java.net.URL;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 import static com.google.common.collect.Iterables.elementsEqual;
 import static com.google.common.collect.Lists.newArrayList;
 import static java.util.Collections.singletonList;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
-import static pro.javax.che.plugin.gradle.Constants.PROJECT_BUILD_DIR_VAR;
-import static pro.javax.che.plugin.gradle.Constants.PROJECT_BUILD_SCRIPT_VAR;
-import static pro.javax.che.plugin.gradle.Constants.PROJECT_DESCRIPTION_VAR;
-import static pro.javax.che.plugin.gradle.Constants.PROJECT_GRADLE_VERSION_VAR;
-import static pro.javax.che.plugin.gradle.Constants.PROJECT_PATH_VAR;
-import static pro.javax.che.plugin.gradle.Constants.PROJECT_SOURCE_DIR_VAR;
-import static pro.javax.che.plugin.gradle.Constants.PROJECT_TASKS_VAR;
-import static pro.javax.che.plugin.gradle.Constants.PROJECT_TEST_DIR_VAR;
+import static pro.javax.che.plugin.gradle.Constants.*;
 
 /**
  * @author Vlad Zhukovskyi
  */
 public class GradleValueProviderFactoryTest {
-    private static final String      workspace     = "my_ws";
+    private static final String workspace = "my_ws";
 
     private VirtualFileSystem vfs;
 
@@ -68,14 +59,11 @@ public class GradleValueProviderFactoryTest {
         // Clean up after execution
         fsRoot.deleteOnExit();
 
-        final VirtualFileSystemRegistry registry = new VirtualFileSystemRegistry();
-        final WorkspaceHashLocalFSMountStrategy mountStrategy = new WorkspaceHashLocalFSMountStrategy(fsRoot, fsRoot);
-        final LocalFileSystemProvider vfsProvider = new LocalFileSystemProvider(workspace, mountStrategy,
-                                                                                new EventService(), null, SystemPathsFilter.ANY, registry);
+        final Set<VirtualFileFilter> filters = new LinkedHashSet<>();
+        final MemoryLuceneSearcherProvider searcherProvider = new MemoryLuceneSearcherProvider(filters);
+        final LocalVirtualFileSystemProvider vfsProvider = new LocalVirtualFileSystemProvider(fsRoot, searcherProvider);
 
-        registry.registerProvider("my_vfs", vfsProvider);
-
-        vfs = registry.getProvider("my_vfs").newInstance(URI.create(""));
+        vfs = vfsProvider.getVirtualFileSystem();
     }
 
     @Test
@@ -84,13 +72,13 @@ public class GradleValueProviderFactoryTest {
 
         assertNotNull(resource);
 
-        vfs.importZip(vfs.getMountPoint().getRoot().getId(), resource.openStream(), true, false);
+        vfs.getRoot().unzip(resource.openStream(), true, 0);
 
-        final VirtualFile project = vfs.getMountPoint().getVirtualFile("/quickstart");
+        final VirtualFile project = vfs.getRoot().getChild(Path.of("/quickstart"));
 
         assertTrue(project.isFolder());
 
-        final FolderEntry projectFolder = new FolderEntry(workspace, project);
+        final FolderEntry projectFolder = new FolderEntry(project);
         final GradleProjectManager gradleProjectManager = new GradleProjectManager(new DefaultProjectConnectionFactory());
         final ValueProviderFactory valueProviderFactory = new GradleValueProviderFactory(gradleProjectManager);
         final ValueProvider valueProvider = valueProviderFactory.newInstance(projectFolder);
@@ -111,10 +99,10 @@ public class GradleValueProviderFactoryTest {
 
         List<String> computedTasks = valueProvider.getValues(PROJECT_TASKS_VAR);
         List<String> expectedTasks = newArrayList(":assemble", ":build", ":buildDependents", ":buildEnvironment", ":buildNeeded",
-                                                  ":check", ":classes", ":clean", ":cleanEclipse", ":components", ":dependencies",
-                                                  ":dependencyInsight", ":eclipse", ":help", ":init", ":jar", ":javadoc", ":model",
-                                                  ":projects", ":properties", ":tasks", ":test", ":testClasses", ":uploadArchives",
-                                                  ":wrapper");
+                ":check", ":classes", ":clean", ":cleanEclipse", ":components", ":dependencies",
+                ":dependencyInsight", ":eclipse", ":help", ":init", ":jar", ":javadoc", ":model",
+                ":projects", ":properties", ":tasks", ":test", ":testClasses", ":uploadArchives",
+                ":wrapper");
         assertTrue(elementsEqual(computedTasks, expectedTasks));
 
         List<String> computedDescription = valueProvider.getValues(PROJECT_DESCRIPTION_VAR);
@@ -136,12 +124,12 @@ public class GradleValueProviderFactoryTest {
 
     @Test
     public void testShouldReturnEmptyValueForEmptyProjectFolder() throws Exception {
-        vfs.createFolder(vfs.getMountPoint().getRoot().getId(), "empty");
-        final VirtualFile project = vfs.getMountPoint().getVirtualFile("/empty");
+        vfs.getRoot().createFolder("empty");
+        final VirtualFile project = vfs.getRoot().getChild(Path.of("/empty"));
 
         assertTrue(project.isFolder());
 
-        final FolderEntry projectFolder = new FolderEntry(workspace, project);
+        final FolderEntry projectFolder = new FolderEntry(project);
         final GradleProjectManager gradleProjectManager = new GradleProjectManager(new DefaultProjectConnectionFactory());
         final ValueProviderFactory valueProviderFactory = new GradleValueProviderFactory(gradleProjectManager);
         final ValueProvider valueProvider = valueProviderFactory.newInstance(projectFolder);
@@ -152,6 +140,6 @@ public class GradleValueProviderFactoryTest {
 
     @After
     public void tearDown() throws Exception {
-        IoUtil.removeDirectory(vfs.getMountPoint().getRoot().getIoFile().getAbsolutePath());
+        IoUtil.removeDirectory(vfs.getRoot().toIoFile().getAbsolutePath());
     }
 }

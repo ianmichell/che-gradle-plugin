@@ -18,7 +18,7 @@ import pro.javax.che.plugin.gradle.Constants;
 
 import com.google.inject.AbstractModule;
 
-import org.eclipse.che.api.project.server.ValueProviderFactory;
+import org.eclipse.che.api.project.server.type.ValueProviderFactory;
 import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.inject.DynaModule;
 

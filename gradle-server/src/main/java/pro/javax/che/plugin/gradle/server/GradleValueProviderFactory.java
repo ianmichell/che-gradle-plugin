@@ -19,10 +19,9 @@ import pro.javax.che.plugin.gradle.core.GradleProjectManager;
 import com.google.inject.Singleton;
 
 import org.eclipse.che.api.project.server.FolderEntry;
-import org.eclipse.che.api.project.server.InvalidValueException;
-import org.eclipse.che.api.project.server.ValueProvider;
-import org.eclipse.che.api.project.server.ValueProviderFactory;
-import org.eclipse.che.api.project.server.ValueStorageException;
+import org.eclipse.che.api.project.server.type.ValueProvider;
+import org.eclipse.che.api.project.server.type.ValueProviderFactory;
+import org.eclipse.che.api.project.server.type.ValueStorageException;
 import org.gradle.tooling.ProjectConnection;
 import org.gradle.tooling.model.GradleProject;
 import org.gradle.tooling.model.build.BuildEnvironment;
@@ -84,7 +83,7 @@ public class GradleValueProviderFactory implements ValueProviderFactory {
 
         @Override
         public List<String> getValues(String attributeName) throws ValueStorageException {
-            final java.io.File ioFolder = projectFolder.getVirtualFile().getIoFile();
+            final java.io.File ioFolder = projectFolder.getVirtualFile().toIoFile();
 
             if (!isGradleProject(ioFolder)) {
                 return unmodifiableList(emptyList());
@@ -123,9 +122,5 @@ public class GradleValueProviderFactory implements ValueProviderFactory {
             }
         }
 
-        @Override
-        public void setValues(String attributeName, List<String> value) throws ValueStorageException, InvalidValueException {
-            //TODO
-        }
     }
 }

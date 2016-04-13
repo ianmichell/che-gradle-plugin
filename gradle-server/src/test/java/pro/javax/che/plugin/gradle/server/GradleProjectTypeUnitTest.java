@@ -22,6 +22,7 @@ import com.google.inject.multibindings.Multibinder;
 import org.eclipse.che.api.project.server.ProjectApiModule;
 import org.eclipse.che.api.project.server.type.ProjectTypeDef;
 import org.eclipse.che.api.project.server.type.ProjectTypeRegistry;
+import org.eclipse.che.api.vfs.impl.file.FileTreeWatcher;
 import org.eclipse.che.ide.ext.java.server.projecttype.JavaProjectType;
 import org.hamcrest.core.IsInstanceOf;
 import org.junit.Before;
@@ -51,7 +52,8 @@ public class GradleProjectTypeUnitTest {
         injector = Guice.createInjector(new AbstractModule() {
             @Override
             protected void configure() {
-                install(new ProjectApiModule());
+
+//                install(new ProjectApiModule());
 
                 Multibinder<ProjectTypeDef> projectTypesBinder = Multibinder.newSetBinder(binder(), ProjectTypeDef.class);
                 projectTypesBinder.addBinding().to(JavaProjectType.class);
