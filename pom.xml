@@ -63,7 +63,7 @@
         <url>https://github.com/vzhukovskii/che-gradle-plugin/issues</url>
     </issueManagement>
     <properties>
-        <gradle.api.version>2.10</gradle.api.version>
+        <gradle.api.version>8.14.4</gradle.api.version>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
     </properties>
